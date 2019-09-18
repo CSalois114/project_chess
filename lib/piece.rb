@@ -14,7 +14,7 @@ class Piece
     all_verticals   = [*-7..-1, *1..7].map{|y| [0,y]}
     all_diagnals    = [*-7..-1, *1..7].map{|n| [n,n]} + [*-7..-1, *1..7].map{|n| [n,-n]}
 
-    case @type
+    case @unicode
     when "\u2654" || "\u265A" #king
       @move_offsets = [[1,0], [1,1], [0,1], [-1,1], [-1,0], [-1,-1], [0,-1], [1,-1]]
     when "\u2655" || "\u265B" #queen
@@ -29,7 +29,6 @@ class Piece
       @move_offsets = [[0,1], [0,2], [-1,1], [1,1]]
     when "\u265F"             #black pawn
       @move_offsets = [[0,-1], [0,-2], [-1,-1], [1,-1]]
-
     else
       @move_offsets = nil
     end
