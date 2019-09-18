@@ -13,7 +13,7 @@ class Board
     system("clear") || system("cls")
     puts "    1   2   3   4   5   6   7   8  "
     puts "  +---+---+---+---+---+---+---+---+"
-    (1..8).each do |y|  #puts each row of the board
+    (1..8).reverse_each do |y|  #puts each row of the board
       puts "#{y} | #{(1..8).map{|x| @squares[[x,y]].piece ? @squares[[x,y]].piece.unicode : " "}.join(" | ")} |"
       puts "  +---+---+---+---+---+---+---+---+"
     end
