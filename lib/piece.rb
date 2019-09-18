@@ -25,8 +25,11 @@ class Piece
       @move_offsets = all_diagnals
     when "\u2658" || "\u265E" #knight
       @move_offsets = [[2,-1], [2,1], [1,2], [-1,2], [-2,1], [-2,-1], [-1,-2], [1,-2]]
-    when "\u2659" || "\u265F" #pawn
+    when "\u2659"             #white pawn
       @move_offsets = [[0,1], [0,2], [-1,1], [1,1]]
+    when "\u265F"             #black pawn
+      @move_offsets = [[0,-1], [0,-2], [-1,-1], [1,-1]]
+
     else
       @move_offsets = nil
     end
