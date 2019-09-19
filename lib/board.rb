@@ -10,6 +10,11 @@ class Board
     set_pieces_for_new_game
   end
 
+  def move(origin_coords, destination_coords)
+    @squares[destination_coords].piece = @squares[origin_coords].piece
+    @squares[origin_coords].piece = nil
+  end
+  
   def legal_non_king_move?(origin_coords, destination_coords)
     return false unless @squares[origin_coords] && @squares[destination_coords] && @squares[origin_coords].piece
     offsets = get_coord_offsets(origin_coords, destination_coords)

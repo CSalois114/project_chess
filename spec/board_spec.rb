@@ -1,6 +1,20 @@
 require "./lib/board.rb"
 
 describe Board do
+  describe "#move" do
+    it "moves a piece to a new square, removing any piece at the destination" do
+      board = Board.new
+
+      expect(board.squares[[5, 1]].piece.unicode).to eql("\u2654")
+      expect(board.squares[[4, 1]].piece.unicode).to eql("\u2655")
+
+      board.move([5, 1], [4, 1])
+
+      expect(board.squares[[4, 1]].piece.unicode).to eql("\u2654")
+      expect(board.squares[[5, 1]].piece).to be nil
+    end
+  end 
+
   describe "#legal_non_king_move?" do
     it "returns false when no piece is selected" do
       board = Board.new
@@ -57,6 +71,7 @@ describe Board do
       expect(board.legal_non_king_move?([4, 8], [4, 3])).to be true
     end
   end
+
   describe "#legal_king_move?" do
     it "doesn't allow you to move into check" do
       board = Board.new
