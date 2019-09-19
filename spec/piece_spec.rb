@@ -11,9 +11,9 @@ describe Piece do
 
   it "sets offsets correctly" do
     king       = Piece.new("\u2654")
-    queen      = Piece.new("\u2655")
+    queen      = Piece.new("\u265B")
     rook       = Piece.new("\u2656")
-    bishop     = Piece.new("\u2657")
+    bishop     = Piece.new("\u265D")
     knight     = Piece.new("\u2658")
     white_pawn = Piece.new("\u2659")
     black_pawn = Piece.new("\u265F")
