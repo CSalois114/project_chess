@@ -83,5 +83,22 @@ describe Board do
       expect(board.legal_king_move?([1, 5], [2, 4])).to be false
     end
   end
+  
+  describe "#check?" do
+    it "determines if the king given is in check." do
+      board = Board.new
+      board.squares[[1, 5]].piece = Piece.new("\u2654")
+      board.squares[[2, 6]].piece = Piece.new("\u2654")
+      board.squares[[8, 1]].piece = Piece.new("\u265A")
+      board.squares[[2, 1]].piece = Piece.new("\u265A")
 
+      expect(board.check?([5, 1])).to be false
+      expect(board.check?([1, 5])).to be false
+      expect(board.check?([2, 6])).to be true
+
+      expect(board.check?([5, 8])).to be false
+      expect(board.check?([8, 1])).to be false
+      expect(board.check?([2, 1])).to be true
+    end
+  end
 end
