@@ -101,4 +101,15 @@ describe Board do
       expect(board.check?([2, 1])).to be true
     end
   end
+
+  describe "#checkmate?" do
+    it "returns true when the king given is in checkmate" do
+      board = Board.new
+      board.squares[[1, 4]].piece = Piece.new("\u2655")
+      board.squares[[5, 3]].piece = Piece.new("\u265A")
+      
+      expect(board.checkmate?([5, 1])).to be false
+      expect(board.checkmate?([5, 3])).to be true
+    end
+  end
 end

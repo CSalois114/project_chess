@@ -64,6 +64,15 @@ class Board
     return false
   end
 
+  def checkmate?(king_coords)
+    return false unless check?(king_coords) 
+    @squares[king_coords].piece.move_offsets.each do |offsets|
+      destination_coords = [king_coords[0] + offsets[0], king_coords[1] + offsets[1]]
+      return false if @squares[destination_coords] && legal_king_move?(king_coords, destination_coords)
+    end
+    true
+  end
+  
   def display 
     system("clear") || system("cls")
     puts "    1   2   3   4   5   6   7   8  "
@@ -89,6 +98,10 @@ class Board
 
   def get_coord_offsets(origin_coords, destination_coords)
     [destination_coords[0] - origin_coords[0], destination_coords[1] - origin_coords[1]]
+  end
+
+  def get_destination_coords(origin_coords, offsets)
+    [origin_coords[0] + offsets[0], origin_coords[1] + offsets[1]]
   end
 
   def set_pieces_for_new_game
