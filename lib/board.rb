@@ -1,8 +1,10 @@
 require_relative "piece"
 require_relative "square"
-require "yaml"
+require_relative "saving"
 
 class Board
+  include Saving
+
   attr_reader :squares 
   attr_accessor :turn_color
 
@@ -91,23 +93,6 @@ class Board
       puts "  +---+---+---+---+---+---+---+---+"
     end
     puts "    1   2   3   4   5   6   7   8  "
-  end
-
-  def save(file_name)
-    Dir.mkdir("saves") unless Dir.exist?("saves")
-    save = YAML.dump({
-      :squares => @squares.dup,
-      :turn_color => @turn_color.dup
-    })
-    save_file = File.open("./saves/#{file_name}", 'w')
-    save_file.puts save
-    save_file.close
-  end
-
-  def load(save_file)
-    data = YAML.load File.read(save_file)
-    @squares = data[:squares]
-    @turn_color = data[:turn_color]
   end
    
   private
