@@ -2,9 +2,11 @@ require_relative "piece"
 require_relative "square"
 
 class Board
-  attr_reader :squares
+  attr_reader :squares 
+  attr_accessor :turn_color
 
   def initialize
+    @turn_color = :white
     @squares = {}
     (1..8).each{|x| (1..8).each{|y| @squares[ [x, y] ] = Square.new([x,y]) } }
     set_pieces_for_new_game
@@ -13,10 +15,16 @@ class Board
   def move(origin_coords, destination_coords)
     @squares[destination_coords].piece = @squares[origin_coords].piece
     @squares[origin_coords].piece = nil
+    @turn_color = @turn_color == :white ? :black : :white
   end
   
-  def legal_non_king_move?(origin_coords, destination_coords)
+  def legal_non_king_move?(origin_coords, destination_coords, test_run=false)
     return false unless @squares[origin_coords] && @squares[destination_coords] && @squares[origin_coords].piece
+    #test_run should be set to true when you want to test a move out of turn of the game
+    #this is used by #check? to see if a piece could attack the king
+    unless test_run
+      return false unless @squares[origin_coords].piece.color == @turn_color
+    end
     move_offsets = get_coord_offsets(origin_coords, destination_coords)
     piece = @squares[origin_coords].piece
     return false unless piece.move_offsets.include?(move_offsets)
@@ -58,7 +66,7 @@ class Board
     enemy_squares_array.each do |square|
       #If any enemy has the potential to attack the king, check if that move is legal.
       if square.piece.move_offsets.include?(get_coord_offsets(square.coords.dup, king_coords))
-        return true if legal_non_king_move?(square.coords.dup, king_coords)
+         return true if legal_non_king_move?(square.coords.dup, king_coords, true)
       end
     end
     return false
