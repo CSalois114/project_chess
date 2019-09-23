@@ -131,4 +131,36 @@ describe Board do
       expect(board.checkmate?([5, 3])).to be true
     end
   end
+
+  describe "get_winner" do
+    it "returns nil when there is no winner" do
+      board = Board.new
+      expect(board.get_winner).to be nil
+    end
+
+    it "returns the winning color when a king is in checkmate" do
+      board = Board.new
+      board.squares[[5, 1]].piece = nil
+      board.squares[[2, 4]].piece = Piece.new("\u265B")
+      board.squares[[1, 6]].piece = Piece.new("\u2654")
+
+      expect(board.get_winner).to eql(:black)
+
+      board = Board.new
+      board.squares[[5, 8]].piece = nil
+      board.squares[[2, 5]].piece = Piece.new("\u2655")
+      board.squares[[1, 3]].piece = Piece.new("\u265A")
+
+      expect(board.get_winner).to eql(:white)
+    end
+    
+    it "returns :draw if there are only the two kings left" do
+      board = Board.new
+      board.squares.values.each {|square| square.piece = nil}
+      board.squares[[1, 1]].piece = Piece.new("\u2654")
+      board.squares[[8, 8]].piece = Piece.new("\u265A")
+
+      expect(board.get_winner).to eql(:draw)
+    end
+  end
 end

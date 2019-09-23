@@ -83,6 +83,17 @@ class Board
     end
     true
   end
+
+  def get_winner
+    @squares.values.each do |square| 
+      return :white if square.piece && square.piece.unicode == "\u265A" && checkmate?(square.coords)
+      return :black if square.piece && square.piece.unicode == "\u2654" && checkmate?(square.coords)
+    end
+    return :draw if @squares.values.select {|square| square.piece}.all? do |square|
+      ["\u2654", "\u265A"].include?(square.piece.unicode) if square.piece
+    end
+    return nil
+  end
   
   def display 
     system("clear") || system("cls")
