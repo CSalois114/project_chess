@@ -121,11 +121,7 @@ class Board
   def get_coord_offsets(origin_coords, destination_coords)
     [destination_coords[0] - origin_coords[0], destination_coords[1] - origin_coords[1]]
   end
-
-  def get_destination_coords(origin_coords, offsets)
-    [origin_coords[0] + offsets[0], origin_coords[1] + offsets[1]]
-  end
-
+  
   def set_pieces_for_new_game
     #set kings
     @squares[[5, 1]].piece = Piece.new("\u2654")
