@@ -66,13 +66,13 @@ class Board
   
   def display 
     system("clear") || system("cls")
-    puts "    1   2   3   4   5   6   7   8  "
+    puts "    a   b   c   d   e   f   g   h  "
     puts "  +---+---+---+---+---+---+---+---+"
     (1..8).reverse_each do |y|  #puts each row of the board
       puts "#{y} | #{(1..8).map{|x| @squares[[x,y]].piece ? @squares[[x,y]].piece.unicode : " "}.join(" | ")} |"
       puts "  +---+---+---+---+---+---+---+---+"
     end
-    puts "    1   2   3   4   5   6   7   8  "
+    puts "    a   b   c   d   e   f   g   h  "
   end
    
   private
