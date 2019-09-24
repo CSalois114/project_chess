@@ -20,46 +20,15 @@ class Board
     @squares[origin_coords].piece = nil
     @turn_color = @turn_color == :white ? :black : :white
   end
-  
-  def legal_non_king_move?(origin_coords, destination_coords, test_run=false)
+
+  def legal_move?(origin_coords, destination_coords, ignore_color=false)
     return false unless @squares[origin_coords] && @squares[destination_coords] && @squares[origin_coords].piece
-    #test_run should be set to true when you want to test a move out of turn of the game
-    #this is used by #check? to see if a piece could attack the king
-    unless test_run
-      return false unless @squares[origin_coords].piece.color == @turn_color
-    end
-    move_offsets = get_coord_offsets(origin_coords, destination_coords)
-    piece = @squares[origin_coords].piece
-    return false unless piece.move_offsets.include?(move_offsets)
-    #If the destination square is occupied
-    if @squares[destination_coords].piece
-      return false if piece.color == @squares[destination_coords].piece.color
-      #If the piece is a pawn, it can't attack straight ahead
-      return false if ["\u2659", "\u265F"].include?(piece.unicode) && 
-        [[0, 1],[0, 2],[0, -1],[0, -2]].include?(move_offsets)
-    end
-    #Check for clear line of attack if piece is a queen, rook, or bishop
-    if ["\u2655", "\u265B", "\u2656", "\u265C", "\u2657", "\u265D"].include?(piece.unicode)
-      return false unless line_to_destination_clear?(origin_coords, destination_coords)
-    end
-    #Pawns can only move two spaces if origin_square is the square they start on
-    return false if piece.unicode == "\u2659" && move_offsets == [0, 2] && origin_coords[1] != 2
-    return false if piece.unicode == "\u265F" && move_offsets == [0, -2] && origin_coords[1] != 7
-
-    return true
-  end
-
-  def legal_king_move?(origin_coords, destination_coords)
-    #See if it's a legal move disregarding if the king will be in check.
+    return false unless @squares[origin_coords].piece.color == @turn_color || ignore_color
     return false unless legal_non_king_move?(origin_coords, destination_coords)
-    #Saves destination squares piece if there is one so that it can temporarily be replaced
-    #with the moving king to see if it will be in check at the destination.
-    destination_current_piece = @squares[destination_coords].piece
-    @squares[destination_coords].piece = @squares[origin_coords].piece
-    legal = check?(destination_coords) ? false : true
-    #Replace the piece that should currently be at the destination.
-    @squares[destination_coords].piece = destination_current_piece
-    legal
+    if @squares[origin_coords].piece && ["\u2654", "\u265A"].include?(@squares[origin_coords].piece.unicode)
+      return false unless moving_into_check?(origin_coords, destination_coords)
+    end
+    true
   end
 
   def check?(king_coords)
@@ -69,7 +38,7 @@ class Board
     enemy_squares_array.each do |square|
       #If any enemy has the potential to attack the king, check if that move is legal.
       if square.piece.move_offsets.include?(get_coord_offsets(square.coords.dup, king_coords))
-         return true if legal_non_king_move?(square.coords.dup, king_coords, true)
+         return true if legal_move?(square.coords.dup, king_coords, true)
       end
     end
     return false
@@ -79,12 +48,12 @@ class Board
     return false unless check?(king_coords) 
     @squares[king_coords].piece.move_offsets.each do |offsets|
       destination_coords = [king_coords[0] + offsets[0], king_coords[1] + offsets[1]]
-      return false if @squares[destination_coords] && legal_king_move?(king_coords, destination_coords)
+      return false if @squares[destination_coords] && legal_move?(king_coords, destination_coords)
     end
     true
   end
 
-  def get_winner
+  def get_result
     @squares.values.each do |square| 
       return :white if square.piece && square.piece.unicode == "\u265A" && checkmate?(square.coords)
       return :black if square.piece && square.piece.unicode == "\u2654" && checkmate?(square.coords)
@@ -107,6 +76,39 @@ class Board
   end
    
   private
+
+  def legal_non_king_move?(origin_coords, destination_coords)
+    move_offsets = get_coord_offsets(origin_coords, destination_coords)
+    piece = @squares[origin_coords].piece
+    return false unless piece.move_offsets.include?(move_offsets)
+    #If the destination square is occupied
+    if @squares[destination_coords].piece
+      return false if piece.color == @squares[destination_coords].piece.color
+      #If the piece is a pawn, it can't attack straight ahead
+      return false if ["\u2659", "\u265F"].include?(piece.unicode) && 
+        [[0, 1],[0, 2],[0, -1],[0, -2]].include?(move_offsets)
+    end
+    #Check for clear line of attack if piece is a queen, rook, or bishop
+    if ["\u2655", "\u265B", "\u2656", "\u265C", "\u2657", "\u265D"].include?(piece.unicode)
+      return false unless line_to_destination_clear?(origin_coords, destination_coords)
+    end
+    #Pawns can only move two spaces if origin_square is the square they start on
+    return false if piece.unicode == "\u2659" && move_offsets == [0, 2] && origin_coords[1] != 2
+    return false if piece.unicode == "\u265F" && move_offsets == [0, -2] && origin_coords[1] != 7
+
+    return true
+  end
+
+  def moving_into_check?(origin_coords, destination_coords)
+    #Saves destination squares piece if there is one so that it can temporarily be replaced
+    #with the moving king to see if it will be in check at the destination.
+    destination_current_piece = @squares[destination_coords].piece
+    @squares[destination_coords].piece = @squares[origin_coords].piece
+    legal = check?(destination_coords) ? false : true
+    #Replace the piece that should currently be at the destination.
+    @squares[destination_coords].piece = destination_current_piece
+    legal
+  end
 
   def line_to_destination_clear?(origin_coords, destination_coords)
     offsets = get_coord_offsets(origin_coords, destination_coords)
