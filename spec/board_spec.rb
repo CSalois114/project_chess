@@ -98,32 +98,36 @@ describe Board do
     end
   end
   
-  describe "#check?" do
-    it "determines if the king given is in check." do
+  describe "#get_checked_color" do
+    it "returns nil if no king in check or the color of the king in check" do
       board = Board.new
-      board.squares[[1, 5]].piece = Piece.new("\u2654")
-      board.squares[[2, 6]].piece = Piece.new("\u2654")
-      board.squares[[8, 1]].piece = Piece.new("\u265A")
-      board.squares[[2, 1]].piece = Piece.new("\u265A")
+      board.squares.values.each {|square| square.piece = nil}
+      board.squares[[1, 1]].piece = Piece.new("\u2654") #white king
+      board.squares[[3, 3]].piece = Piece.new("\u265A") #black king
 
-      expect(board.check?([5, 1])).to be false
-      expect(board.check?([1, 5])).to be false
-      expect(board.check?([2, 6])).to be true
+      expect(board.get_checked_color).to be nil
 
-      expect(board.check?([5, 8])).to be false
-      expect(board.check?([8, 1])).to be false
-      expect(board.check?([2, 1])).to be true
+      board.squares[[2, 2]].piece = Piece.new("\u265B") #black queen
+
+      expect(board.get_checked_color).to eql(:white)
+
+      board.squares[[2, 2]].piece = Piece.new("\u2655") #white queen
+
+      expect(board.get_checked_color).to eql(:black)
     end
   end
 
-  describe "#checkmate?" do
+  describe "#get_checkmated_color" do
     it "returns true when the king given is in checkmate" do
       board = Board.new
-      board.squares[[1, 4]].piece = Piece.new("\u2655")
-      board.squares[[5, 3]].piece = Piece.new("\u265A")
+
+      expect(board.get_checkmated_color).to be nil
+
+      board.squares[[1, 4]].piece = Piece.new("\u2655") #white queen
+      board.squares[[5, 8]].piece = nil
+      board.squares[[5, 3]].piece = Piece.new("\u265A") #black king
       
-      expect(board.checkmate?([5, 1])).to be false
-      expect(board.checkmate?([5, 3])).to be true
+      expect(board.get_checkmated_color).to eql(:black)
     end
   end
 

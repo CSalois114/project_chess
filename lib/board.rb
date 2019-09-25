@@ -22,42 +22,49 @@ class Board
   end
 
   def legal_move?(origin_coords, destination_coords, ignore_color=false)
-    return false unless @squares[origin_coords] && @squares[destination_coords] && @squares[origin_coords].piece
-    return false unless @squares[origin_coords].piece.color == @turn_color || ignore_color
-    return false unless legal_non_king_move?(origin_coords, destination_coords)
+    return false unless @squares[origin_coords] && @squares[destination_coords] && 
+      @squares[origin_coords].piece  && (@squares[origin_coords].piece.color == @turn_color || ignore_color) &&
+      legal_non_king_move?(origin_coords, destination_coords)
     if @squares[origin_coords].piece && ["\u2654", "\u265A"].include?(@squares[origin_coords].piece.unicode)
       return false unless moving_into_check?(origin_coords, destination_coords)
     end
     true
   end
 
-  def check?(king_coords)
-    king_color = @squares[king_coords].piece.color
-    #Gets all the squares with the opposite color pieces
-    enemy_squares_array = @squares.values.select {|square| square.piece.color != king_color if square.piece}
-    enemy_squares_array.each do |square|
-      #If any enemy has the potential to attack the king, check if that move is legal.
-      if square.piece.move_offsets.include?(get_coord_offsets(square.coords.dup, king_coords))
-         return true if legal_move?(square.coords.dup, king_coords, true)
+  def get_checked_color
+    king_squares = get_king_squares
+    king_squares.each do |king_square|
+      king_color = king_square.piece.color
+      #Gets all the squares with the opposite color pieces
+      enemy_squares = @squares.values.select {|square| square.piece && square.piece.color != king_color}
+      enemy_squares.each do |square|
+        #If any enemy has the potential to attack the king, check if that move is legal.
+        if square.piece.move_offsets.include?(get_coord_offsets(square.coords.dup, king_square.coords.dup))
+          return king_square.piece.color if legal_move?(square.coords.dup, king_square.coords.dup, true)
+        end
       end
     end
-    return false
+    return nil
   end
 
-  def checkmate?(king_coords)
-    return false unless check?(king_coords) 
-    @squares[king_coords].piece.move_offsets.each do |offsets|
-      destination_coords = [king_coords[0] + offsets[0], king_coords[1] + offsets[1]]
-      return false if @squares[destination_coords] && legal_move?(king_coords, destination_coords)
+  def get_checkmated_color
+    return nil unless get_checked_color
+    #get the king that is in check's square
+    king_square = get_king_squares.select {|square| square.piece.color == get_checked_color}.pop
+    king_square.piece.move_offsets.each do |offsets|
+      destination_coords = [king_square.coords[0] + offsets[0], king_square.coords[1] + offsets[1]]
+      return nil if @squares[destination_coords] && legal_move?(king_square.coords.dup, destination_coords)
     end
-    true
+    return king_square.piece.color
   end
+
+  def get_king_squares
+    @squares.values.select {|square| square.piece && ["\u2654", "\u265A"].include?(square.piece.unicode)}
+  end
+
 
   def get_result
-    @squares.values.each do |square| 
-      return :white if square.piece && square.piece.unicode == "\u265A" && checkmate?(square.coords)
-      return :black if square.piece && square.piece.unicode == "\u2654" && checkmate?(square.coords)
-    end
+    return get_checkmated_color == :white ? :black : :white if get_checkmated_color
     return :draw if @squares.values.select {|square| square.piece}.all? do |square|
       ["\u2654", "\u265A"].include?(square.piece.unicode) if square.piece
     end
@@ -104,7 +111,7 @@ class Board
     #with the moving king to see if it will be in check at the destination.
     destination_current_piece = @squares[destination_coords].piece
     @squares[destination_coords].piece = @squares[origin_coords].piece
-    legal = check?(destination_coords) ? false : true
+    legal = get_checked_color ? false : true
     #Replace the piece that should currently be at the destination.
     @squares[destination_coords].piece = destination_current_piece
     legal
