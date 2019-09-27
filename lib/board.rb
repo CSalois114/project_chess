@@ -102,8 +102,19 @@ class Board
     #Pawns can only move two spaces if origin_square is the square they start on
     return false if piece.unicode == "\u2659" && move_offsets == [0, 2] && origin_coords[1] != 2
     return false if piece.unicode == "\u265F" && move_offsets == [0, -2] && origin_coords[1] != 7
-
+    #move can't expose king to check
+    return false if leaves_king_in_check?(origin_coords, destination_coords)
     return true
+  end
+
+  def leaves_king_in_check?(origin_coords, destination_coords)
+    destination_piece = @squares[destination_coords].piece.dup
+    @squares[destination_coords].piece = @squares[origin_coords].piece
+    @squares[origin_coords].piece = nil
+    checked_color = get_checked_color
+    @squares[origin_coords].piece = @squares[destination_coords].piece
+    @squares[destination_coords].piece = destination_piece
+    return checked_color ? true : false
   end
 
   def moving_into_check?(origin_coords, destination_coords)

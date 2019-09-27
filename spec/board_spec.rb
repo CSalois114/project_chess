@@ -96,6 +96,13 @@ describe Board do
       expect(board.legal_move?([1, 5], [2, 4], true)).to be false
       expect(board.legal_move?([5, 8], [5, 7], true)).to be true
     end
+
+    it "doesn't allow you to expose your king to check" do 
+      board = Board.new
+      board.squares[[3, 3]].piece = Piece.new("\u265B") #black queen
+
+      expect(board.legal_move?([4, 2], [4, 3], true)).to be false
+    end
   end
   
   describe "#get_checked_color" do
