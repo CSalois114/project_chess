@@ -106,14 +106,17 @@ describe Board do
   end
   
   describe "#get_checked_color" do
-    it "returns nil if no king in check or the color of the king in check" do
+    it "returns nil if no king is in check" do
+      board = Board.new
+
+      expect(board.get_checked_color).to be nil
+    end
+
+    it "returns the color of the king in check" do
       board = Board.new
       board.squares.values.each {|square| square.piece = nil}
       board.squares[[1, 1]].piece = Piece.new("\u2654") #white king
       board.squares[[3, 3]].piece = Piece.new("\u265A") #black king
-
-      expect(board.get_checked_color).to be nil
-
       board.squares[[2, 2]].piece = Piece.new("\u265B") #black queen
 
       expect(board.get_checked_color).to eql(:white)
@@ -125,11 +128,42 @@ describe Board do
   end
 
   describe "#get_checkmated_color" do
-    it "returns true when the king given is in checkmate" do
+    it "returns nil when no king in checkmate" do
       board = Board.new
 
       expect(board.get_checkmated_color).to be nil
+    end
 
+    it "returns nil when the king can move out of check" do
+      board = Board.new
+      board.squares[[5, 1]].piece = nil 
+      board.squares[[5, 6]].piece = Piece.new("\u2654") #white king
+
+      expect(board.get_checkmated_color).to be nil
+    end
+
+    it "returns nil when there is only one attacking piece and it can be killed" do 
+      board = Board.new
+      board.squares[[6, 2]].piece = nil
+      board.squares[[7, 3]].piece = Piece.new("\u265B") #black queen
+
+      expect(board.get_checked_color).to eql(:white)
+
+      expect(board.get_checkmated_color).to be nil
+    end
+
+    it "returns nil when there is only one attacking piece and it can be blocked" do
+      board = Board.new
+      board.squares[[6, 2]].piece = nil
+      board.squares[[8, 4]].piece = Piece.new("\u265B") #black queen
+
+      expect(board.get_checked_color).to eql(:white)
+
+      expect(board.get_checkmated_color).to be nil
+    end
+
+    it "returns the color of the king in checkmate" do
+      board = Board.new
       board.squares[[1, 4]].piece = Piece.new("\u2655") #white queen
       board.squares[[5, 8]].piece = nil
       board.squares[[5, 3]].piece = Piece.new("\u265A") #black king
@@ -141,6 +175,7 @@ describe Board do
   describe "get_result" do
     it "returns nil when there is no winner" do
       board = Board.new
+
       expect(board.get_result).to be nil
     end
 
