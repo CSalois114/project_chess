@@ -19,6 +19,7 @@ class Board
     @squares[destination_coords].piece = @squares[origin_coords].piece
     @squares[origin_coords].piece = nil
     @turn_color = @turn_color == :white ? :black : :white
+    change_pawn_in_end(destination_coords)
   end
 
   def legal_move?(origin_coords, destination_coords, ignore_turn_color=false)
@@ -93,6 +94,37 @@ class Board
   end
    
   private
+
+  def change_pawn_in_end(coords)
+    piece_color = @squares[coords].piece.color
+    if [1, 8].include?(coords[1]) && ["\u2659", "\u265F"].include?(@squares[coords].piece.unicode)
+      case get_desired_piece_type
+      when :queen
+        @squares[coords].piece = piece_color == :white ? Piece.new("\u2655") : Piece.new("\u265B")
+      when :rook
+        @squares[coords].piece = piece_color == :white ? Piece.new("\u2656") : Piece.new("\u265C")
+      when :bishop
+        @squares[coords].piece = piece_color == :white ? Piece.new("\u2657") : Piece.new("\u265D")
+      when :knight
+        @squares[coords].piece = piece_color == :white ? Piece.new("\u2658") : Piece.new("\u265E")
+      end
+    end
+  end
+      
+  def get_desired_piece_type
+    display
+    puts "Your pawn has made it to the other side!"
+    puts "Enter the name of the piece you would like to replace it with."
+    puts "Your options are: queen, rook, bishop, or knight"
+    print "Piece type: "
+    piece = gets.chomp.downcase.to_sym
+    until [:queen, :rook, :bishop, :knight].include?(piece)
+      puts "Invalid entry"
+      puts "Please enter queen, rook, bishop, or knight."
+      piece = gets.chomp.downcase.to_sym
+    end
+    piece
+  end
 
   def attack_blockable?(attacking_square, king_square)
     if ["\u2655", "\u265B", "\u2656", "\u265C", "\u2657", "\u265D"].include?(attacking_square.piece.unicode)

@@ -27,6 +27,20 @@ describe Board do
 
       expect(board.turn_color).to eql(:white)
     end
+
+    it "upgrades pawn when pawn reaches other sied" do
+      board = Board.new
+      allow($stdout).to receive(:puts)
+      board.squares.values.each {|square| square.piece = nil}
+      board.squares[[1, 2]].piece = Piece.new("\u265f") #black pawn
+      board.squares[[1, 7]].piece = Piece.new("\u2659") #white pawn
+      allow(board).to receive(:gets).and_return("queen")
+      board.move([1, 2], [1, 1])
+      board.move([1, 7], [1, 8])
+
+      expect(board.squares[[1, 1]].piece.unicode).to eql("\u265B")
+      expect(board.squares[[1, 8]].piece.unicode).to eql("\u2655")
+    end
   end 
 
   describe "#legal_move?" do
