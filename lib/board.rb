@@ -1,9 +1,11 @@
 require_relative "piece"
 require_relative "square"
 require_relative "saving"
+require_relative "display"
 
 class Board
   include Saving
+  include Display
 
   attr_reader :squares 
   attr_accessor :turn_color
@@ -62,7 +64,7 @@ class Board
       return false
     end
     if moving_into_check?(origin_coords, destination_coords)
-      puts "ERROR: You can't expose your King to check" if display_error
+      puts "ERROR: Your King can't be left in check" if display_error
       return false
     end
     return true
@@ -103,17 +105,6 @@ class Board
     return nil
   end
   
-  def display 
-    system("clear") || system("cls")
-    puts "    a   b   c   d   e   f   g   h  "
-    puts "  +---+---+---+---+---+---+---+---+"
-    (1..8).reverse_each do |y|  #puts each row of the board
-      puts "#{y} | #{(1..8).map{|x| @squares[[x,y]].piece ? @squares[[x,y]].piece.unicode : " "}.join(" | ")} |"
-      puts "  +---+---+---+---+---+---+---+---+"
-    end
-    puts "    a   b   c   d   e   f   g   h  "
-  end
-   
   private
 
   def change_pawn_in_end(coords)
@@ -133,15 +124,11 @@ class Board
   end
       
   def get_desired_piece_type
-    display
-    puts "Your pawn has made it to the other side!"
-    puts "Enter the name of the piece you would like to replace it with."
-    puts "Your options are: queen, rook, bishop, or knight"
-    print "Piece type: "
+    display_board
+    display_pawn_upgrade
     piece = gets.chomp.downcase.to_sym
     until [:queen, :rook, :bishop, :knight].include?(piece)
-      puts "Invalid entry"
-      puts "Please enter queen, rook, bishop, or knight."
+      display_invalid_pawn_upgrade
       piece = gets.chomp.downcase.to_sym
     end
     piece
