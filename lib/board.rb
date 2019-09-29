@@ -22,29 +22,49 @@ class Board
     change_pawn_in_end(destination_coords)
   end
 
-  def legal_move?(origin_coords, destination_coords, ignore_turn_color=false)
-    return false unless @squares[origin_coords] && @squares[destination_coords] && @squares[origin_coords].piece  
-    return false unless (@squares[origin_coords].piece.color == @turn_color || ignore_turn_color)
-
+  def legal_move?(origin_coords, destination_coords, ignore_turn_color=false, display_error=true)
+    unless @squares[origin_coords] && @squares[destination_coords]
+      puts "ERROR: Invalid Coordinates" if display_error
+      return false  
+    end
+    unless @squares[origin_coords].piece
+      puts "ERROR: There is no piece there to move" if display_error
+      return false  
+    end
     move_offsets = get_coord_offsets(origin_coords, destination_coords)
     piece = @squares[origin_coords].piece
-    return false unless piece.move_offsets.include?(move_offsets)
-    #If the destination square is occupied
+    unless (@squares[origin_coords].piece.color == @turn_color || ignore_turn_color)
+      puts "ERROR: You can only move #{@turn_color.capitalize} pieces" if display_error
+      return false
+    end
+    unless piece.move_offsets.include?(move_offsets)
+      puts "ERROR: That piece can't move like that" if display_error
+      return false
+    end
     if @squares[destination_coords].piece
-      return false if piece.color == @squares[destination_coords].piece.color
-      #If the piece is a pawn, it can't attack straight ahead
-      return false if ["\u2659", "\u265F"].include?(piece.unicode) && 
-        [[0, 1], [0, 2], [0, -1], [0, -2]].include?(move_offsets)
+      if piece.color == @squares[destination_coords].piece.color
+        puts "ERROR: You can't attack your own piece" if display_error
+        return false
+      end
+      if ["\u2659", "\u265F"].include?(piece.unicode) && [[0,1], [0,2], [0,-1], [0,-2]].include?(move_offsets)
+        puts "ERROR: Pawns can only attack diagonally" if display_error
+        return false
+      end
     end
-    #Check for clear line of attack if piece is a queen, rook, or bishop
-    if ["\u2655", "\u265B", "\u2656", "\u265C", "\u2657", "\u265D"].include?(piece.unicode)
-      return false if get_squares_between(origin_coords, destination_coords).any? {|square| square.piece}
+    if ["\u2655", "\u265B", "\u2656", "\u265C", "\u2657", "\u265D"].include?(piece.unicode) &&
+        get_squares_between(origin_coords, destination_coords).any? {|square| square.piece}
+      puts "ERROR: There is a piece in the way of that move" if display_error
+      return false
     end
-    #Pawns can only move two spaces if origin_square is the square they start the game on
-    return false if piece.unicode == "\u2659" && move_offsets == [0, 2] && origin_coords[1] != 2
-    return false if piece.unicode == "\u265F" && move_offsets == [0, -2] && origin_coords[1] != 7
-    #move can't expose king to check
-    return false if moving_into_check?(origin_coords, destination_coords)
+    if (piece.unicode == "\u2659" && move_offsets == [0, 2] && origin_coords[1] != 2) || 
+       (piece.unicode == "\u265F" && move_offsets == [0, -2] && origin_coords[1] != 7)
+      puts "ERROR: Pawns can only move two spaces from their starting square" if display_error
+      return false
+    end
+    if moving_into_check?(origin_coords, destination_coords)
+      puts "ERROR: You can't expose your King to check" if display_error
+      return false
+    end
     return true
     true
   end
@@ -63,7 +83,8 @@ class Board
     #check if the king can move out of check
     king_square.piece.move_offsets.each do |offsets|
       destination_coords = [king_square.coords[0] + offsets[0], king_square.coords[1] + offsets[1]]
-      return nil if @squares[destination_coords] && legal_move?(king_square.coords.dup, destination_coords)
+      return nil if @squares[destination_coords] && 
+                    legal_move?(king_square.coords.dup, destination_coords, false, false)
     end
     #check if only one piece is attacking the king and if it can be killed or blocked
     if get_squares_that_can_attack(king_square).length == 1
@@ -140,7 +161,7 @@ class Board
     squares_that_can_attack = @squares.values.select do |square| 
       square.piece && square.piece.color != target_color && 
       square.piece.move_offsets.include?(get_coord_offsets(square.coords.dup, target_square.coords.dup)) &&
-      legal_move?(square.coords.dup, target_square.coords.dup, true)
+      legal_move?(square.coords.dup, target_square.coords.dup, true, false)
     end
   end
 

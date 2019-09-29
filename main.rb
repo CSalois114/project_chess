@@ -12,12 +12,10 @@ def get_valid_entry
         coords[0] = coords[0].ord - 96
         coords[1] = coords[1].to_i
       end
-      return entry if @board.legal_move?(entry[0].dup, entry[1].dup)
+      return entry if @board.legal_move?(entry[0], entry[1])
     end
-    puts "Invalid Entry"
-    puts "Entry options are save, load, quit or the origin and destination "
-    puts "coordinates of a #{@board.turn_color.to_s} colored piece you wish to move."
-    print "\n#{@board.turn_color.capitalize}'s turn: "
+    puts "\nMove options are save, load, quit or your move coordinates."
+    puts "Move coordinates should be seperated by a space."
   end
 end
   
@@ -42,12 +40,9 @@ def startup_display
 end
 
 def turn_display
-  puts "#{@board.turn_color.capitalize}'s turn"
-  puts "Enter the coordinates of the piece you would like to move."
-  puts "followed by the destination coordinates for your piece."
-  puts "Make sure to leave a space between the two coordinates."
-  puts "Example: a2 a3"
-  print "\n#{@board.turn_color.capitalize}'s turn: "
+  puts "*#{@board.turn_color.capitalize}'s turn"
+  puts "Example Move: a2 a3"
+  print "\n#{@board.turn_color.capitalize}'s move: "
 end
 
 def exicute_entry(player_entry)
