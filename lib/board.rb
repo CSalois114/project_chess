@@ -105,6 +105,34 @@ class Board
     return nil
   end
   
+  def get_valid_entry
+    while true
+      entry = gets.chomp.downcase
+      return entry.to_sym if [:save, :load, :quit, :""].include?(entry.to_sym)
+      if /[a-h]\d\s[a-h]\d/ === entry
+        entry = entry.split.map {|coords| coords = coords.split("")}.each do |coords|
+          coords[0] = coords[0].ord - 96
+          coords[1] = coords[1].to_i
+        end
+        return entry if legal_move?(entry[0], entry[1])
+      end
+      display_invalid_entry
+    end
+  end
+    
+  def exicute_entry(player_entry)
+    case player_entry
+    when :save
+      save 
+    when :load
+      load
+    when :""
+      nil
+    else
+      move(player_entry[0], player_entry[1])
+    end
+  end
+
   private
 
   def change_pawn_in_end(coords)
